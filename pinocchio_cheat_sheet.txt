@@ -1,0 +1,518 @@
+Pinocchio Cheat Sheet
+Get started
+easy install
+import
+documentation
+
+conda install -c conda-forge pinocchio
+import pinocchio as pin
+from pinocchio.utils import *
+pin.Model?
+Spatial quantities
+
+SE3
+unit transformation
+random transformation
+rotation matrix
+translation vector
+SE3 inverse
+SE3 action
+action matrix
+homegeneous matrix
+log operation SE3 → 6D
+exp operation
+
+Transforms
+aMb = pin.SE3(aRb,apb)
+M = pin.SE3(1) or pin.SE3.Identity()
+pin.SE3.Random()
+M.rotation
+M.translation
+bMa = aMb.inverse()
+aMc = aMb * bMc
+aXb = aMb.action
+aHb = aMb.homogeneous
+pin.log(M)
+pin.exp(M)
+
+Motion
+linear acceleration
+angular acceleration
+SE3 action
+
+Spatial Velocity
+m = pin.Motion(v,w)
+m.linear
+m.angular
+v a = aMb * v b
+
+used in algorithms
+get classical acceleration
+
+Spatial Acceleration
+a = (ω̇,v̇O )
+a’ = a + (0, ω × vO )
+pin.classicAcceleration(v,a, [aMb])
+
+Force
+linear force
+torque
+SE3 action
+
+Spatial Force
+f = pin.Force(l,n)
+f.linear
+f.angular
+f a = aMb * f b
+
+Inertia
+mass
+center of mass pos.
+rotational inertia
+
+Spatial Inertia
+Y = pin.Inertia(mass,com,I)
+Y.mass
+Y.lever
+Y.inertia
+
+Quaternion
+Angle Axis
+
+Geometry
+quat = pin.Quaternion(R)
+aa = pin.AngleAxis(angle,axis)
+Useful converters
+
+SE3 → (x,y,z,quat)
+(x,y,z,quat) → SE3
+
+pin.se3ToXYZQUAT(M)
+pin.XYZQUATToSE3(vec)
+Data
+
+Data related to the model
+joint data
+joint/[frame] placements
+joint velocities
+joint accelerations
+joint forces
+mass matrix
+non linear effects
+centroidal momentum
+centroidal matrix
+centroidal inertia
+
+data = pin.Data(model)
+data = model.createData()
+data.joints
+data.oMi /[data.oMf]
+data.v
+data.a
+data.f
+data.M
+data.nle
+data.hg
+data.Ag
+data.Ig
+
+Model
+Model of the kinematic tree
+model name
+joint names
+joint models
+joint placements
+link inertias
+frames
+# position variables
+# velocity variables
+Methods
+add joint
+append body
+add frame
+append child into parent model
+build reduced body
+
+Configuration
+
+model = pin.Model()
+model.name
+model.names
+model.joints
+model.placements
+model.inertias
+model.frames
+model.nq
+model.nv
+use ? to get doc and input arguments
+model.addJoint
+model.appendBodyToJoint
+model.addFrame
+model.appendModel
+
+random configuration
+neutral configuration
+normalized configuration
+difference configurations
+distance configurations
+squared distance configurations
+interpolate configuration
+integrate configuration
+partial derivatives of difference
+partial derivatives of integration
+
+model.buildReducedModel
+
+pin.buildModelFromUrdf(filename,[root joint])
+pin.buildModelFromSdf(filename,[root joint],
+root link name,parent guidance)
+Reference Frames
+
+WORLD
+
+Coordinate system (CS)
+LO
+
+CA
+L
+
+WORLD
+world CS
+LOCAL
+local CS of the joint
+LOCAL WORLD ALIGNED local CS aligned
+WORLD axis
+
+with
+
+placement collision
+obj
+collisions detection
+for all pairs
+collisions detection
+for a pair
+distance from collision
+distance from collision each pair
+geometry volume
+radius
+BroadPhase
+
+LOCAL_WORLD_ALIGNED
+
+Frames
+placement of all operational frames
+current frame placements
+wrt origin
+frame veloctiy
+frame acceleration
+frame acceleration
+frames placement
+frame jacobian
+frame jacobian time variation
+partial derivatives of the
+spatial velocity
+partial derivatives of the
+spatial velocity
+partial derivatives of the
+spatial acceleration
+partial derivatives of the
+spatial acceleration
+
+pin.interpolate(model, q1, q2, alpha)
+pin.integrate(model, q, v)
+pin.dDifference(model, q1, q2,
+[arg pos])
+pin.dIntegrate(model, q, v, [arg pos])
+
+Collision
+
+Parsers
+load an URDF file
+load a SDF file
+
+pin.randomConfiguration(model,
+[lower bound, upper bound])
+pin.neutral(model)
+pin.normalize(model, q)
+pin.difference(model, q1, q2)
+pin.distance(model, q1, q2)
+pin.squareDistance(model, q1, q2)
+
+pin.updateFramePlacements(model, data)
+data.oMf
+pin.getFrameVelocity(model, data,
+frame id, ref frame)
+pin.getFrameAcceleration(model, data,
+frame id, ref frame)
+pin.getFrameClassicalAcceleration(
+model, data, frame id, ref frame)
+pin.framesForwardKinematics(model, data,
+q)
+pin.computeFrameJacobian(model, data, q,
+frame id, ref frame)
+pin.frameJacobianTimeVariation(model,
+data, q, v, frame id, ref frame)
+pin.getFrameVelocityDerivatives(model,
+data, frame id, ref frame)
+pin.getFrameVelocityDerivatives(model,
+data, joint id, placement ref frame)
+pin.getFrameVelocityDerivatives(model,
+data, frame id, ref frame)
+pin.getFrameAccelerationDerivatives
+(model, data, joint id, placement
+ref frame)
+
++ forward kinmetatics to update
+geometry
+placements
+
+pin.updateGeometryPlacements(model, data,
+geometry model, geometry data, [q])
+pin.computeCollisions(model, data,
+geometry model, geometry data, q)
+pin.computeCollisions(geometry model,
+geometry data, pair index)
+pin.computeDistance(geometry model,
+geometry data, [pair index])
+pin.computeDistances([model, data],
+geometry model, geometry data, [q])
+pin.computeBodyRadius(model, geometry model,
+geometry data
+pin.computeCollisions(broadphase manager,
+callback)
+pin.computeCollisions(broadphase manager,
+stop at first collision)
+pin.computeCollisions(model, data,
+broadphase manager, q, stop at first collision)
+
+Center of Mass
+total mass of model
+mass of each subtree
+center of mass (COM)
+Jacobian COM
+
+pin.computeTotalMass(model, [data])
+pin.computeSubtreeMasses(model, data)
+pin.centerOfMass(model, data, q, [v,
+a],[compute subtree com])
+pin.jacobianCenterOfMass(model, data,
+[q],[compute subtree com])
+Energy
+
+FK and kinetic Energy
+FK and potential
+Energy
+FK and mechanical
+Energy
+
+pin.computeKineticEnergy(model, data, [q, v])
+pin.computePotentialEnergy(model, data, [q,
+v])
+pin.computeMechanicalEnergy(model, data, [q,
+v])
+
+Regressor
+
+Kinematics
+forward kinematics
+(FK)
+FK derivatives
+h
+h
+
+∂v ∂v
+∂q , ∂ q̇
+
+iW ORLD
+
+∂v ∂a ∂a
+∂q , ∂q , ∂ q̇
+
+iLOCAL
+
+pin.forwardKinematics(model, data, q, [v,[a]])
+pin.computeForwardKinematicsDerivatives(
+model, data, q, v, a)
+pin.getJointVelocityDerivatives(model, data,
+joint id,pin.ReferenceFrame.WORLD)
+pin.getJointAccelerationDerivatives(model,
+data, joint id,pin.ReferenceFrame.LOCAL)
+
+static regressor
+body regressor
+body attached to
+joint regressor
+body attached to
+frame regressor
+joint torque regressor
+
+pin.computeStaticRegressor(model, data, q)
+pin.bodyRegressor(velocity, acceleration)
+pin.jointBodyRegressor(model, data, joint id)
+pin.frameBodyRegressor(model, data, frame id)
+pin.computeJointTorqueRegressor(model, data,
+q, v, a)
+
+Viewer
+create viewer
+load model
+initialize
+display
+sphere
+box
+
+Contact Jacobian
+Jacobian
+full model Jacobian
+→ data.J
+joint Jacobian
+full model dJ/dt
+joint dJ/dt
+
+pin.computeJointJacobians(model, data, [q])
+pin.getJointJacobian(model, data, joint id,
+ref frame)
+pin.computeJointJacobiansTimeVariation(model,
+data, q, v)
+pin.getJointJacobianTimeVariation(model, data,
+joint id, ref frame)
+Forward Dynamics
+
+Articulated-Body
+Algorithm q̈
+Joint Space Inertia
+Matrix Inv
+Composite RigidBody Algorithm
+
+pin.aba(model, data, q, v, tau, [f ext])
+pin.computeMinverse(model, data, [q])
+
+pin.rnea(model, data, q, v, a, [f ext])
+pin.computeGeneralizedGravity(model, data, q)
+pin.computeRNEADerivatives(model, data, q, v,
+a, [f ext])
+
+pin.computeCentroidalMomentum(model, data, [q,
+v])
+pin.computeCentroidalMomentumTimeVariation(
+model, data, [q, v, a])
+
+General
+all terms
+doc)
+
+(check
+
+Contact Dynamics
+constrained
+dynamics with contacts
+impact dynamics
+with contacts
+inverse of the constraint matrix
+
+pin.forwardDynamics(model, data, [q, v,]
+tau, constraint jacobian, constraint drift,
+damping)
+pin.impulseDynamics(model, data,
+[q,] v before, constraint jacobian,
+restitution coefficient, damping)
+pin.computeKKTContactDynamicMatrixInverse(
+model, data, q, constraint jac, damping)
+Constraint Dynamics
+
+Centroidal
+Centroidal momentum
+Centroidal momentum + time derivatives
+
+pin.getConstraintJacobian(model, data,
+contact model, contact data)
+pin.getConstraintJacobian(model, data,
+contact models, contact datas)
+
+pin.crba(model, data, q)
+
+Inverse Dynamics
+Recursive NewtonEuler Algorithm
+generalized gravity
+dtau dq, dtau dv,
+dtau da
+
+kinematic Jacobian
+of constraint model
+kinematic Jacobian
+of set of constraint
+models
+
+allocate memory
+forward
+dynamics with contact
+constraints
+derivatives of the
+forward dynamics
+with
+kinematic
+constraints
+
+pin.initConstraintDynamics(model, data,
+contact models)
+pin.constraintDynamics(model, data, q,
+v, tau, contact models, contact datas,
+[prox settings])
+pin.computeConstraintDynamicsDerivatives(
+model, data, contact models, contact datas,
+prox settings)
+
+Impulse Dynamics
+impulse
+dynamics with contact
+constraints
+impulse dynamics
+derivatives
+
+pin.computeAllTerms(model, data, q, v)
+
+pin.impulseDynamics(model, data, q, v,
+contact models, contact datas, r coeff, mu)
+pin.computeImpulseDynamicsDerivatives(model,
+data, contact models, contact datas, r coeff,
+prox settings)
+Cholesky
+
+Kinematic Regressor
+kinematic regressor
+kinematic regressor
+
+pin.computeJointKinematicRegressor(model,
+data, joint id, ref frame, [placement])
+pin.computeFrameKinematicRegressor(model,
+data, frame id, ref frame)
+
+Cholesky decomposition of the joint
+space inertia matrix
+x of M x = y
+inverse of the joint
+space inertia matrix
+
+pin.cholesky.decompose(model, data)
+
+pin.cholesky.solve(model, data, v)
+pin.cholesky.computeMinv(model, data)
+
+change placement
+of geometry [name]
+
+Get started
+mv = pin.visualize.MeshcatVisualizer
+viz = mv(model, collision model, visual model)
+viz.initViewer(loadModel=True)
+viz.display(q)
+Add basic shapes
+viz.viewer[name].set object(meshcat.geometry.
+Sphere(size), material)
+viz.viewer[name].set object(meshcat.geometry.
+Box([sizex, sizey, sizez]), material)
+Display
+viz.viewer[name].set transform(
+meshcat transform(xyzquat placement))
+
+

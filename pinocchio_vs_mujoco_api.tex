@@ -1,0 +1,519 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[UTF8]{ctex}
+\usepackage{geometry}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{multicol}
+
+\geometry{margin=1.5cm}
+
+% 代码样式设置
+\lstset{
+    language=Python,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue}\ttfamily,
+    stringstyle=\color{red}\ttfamily,
+    commentstyle=\color{green}\ttfamily,
+    breaklines=true,
+    frame=single,
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    tabsize=2
+}
+
+\title{Pinocchio vs MuJoCo API 对比}
+\author{刚体动力学库 API 参考}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{概述}
+
+本文档对比 Pinocchio 和 MuJoCo 两个刚体动力学库的 API 设计和使用方式。两者都采用 Model-Data 分离的设计模式，但在功能定位和 API 细节上有所不同。
+
+\subsection{核心定位}
+
+\begin{itemize}
+    \item \textbf{Pinocchio}: 刚体动力学算法库，专注于算法实现和优化计算
+    \item \textbf{MuJoCo}: 物理仿真引擎，提供完整的仿真环境和可视化
+\end{itemize}
+
+\section{基础 API 对比}
+
+\subsection{模型和数据初始化}
+
+\begin{longtable}{p{5cm}p{6cm}p{6cm}}
+\toprule
+\textbf{功能} & \textbf{Pinocchio} & \textbf{MuJoCo} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{功能} & \textbf{Pinocchio} & \textbf{MuJoCo} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+导入库 & \texttt{import pinocchio as pin} & \texttt{import mujoco} \\
+创建模型 & \texttt{model = pin.Model()} & \texttt{model = mujoco.MjModel.from\_xml\_string(xml)} \\
+从文件加载 & \texttt{model = pin.buildModelFromUrdf(filename)} & \texttt{model = mujoco.MjModel.from\_xml\_path(path)} \\
+创建数据 & \texttt{data = pin.Data(model)} & \texttt{data = mujoco.MjData(model)} \\
+ & \texttt{data = model.createData()} & \\
+\bottomrule
+\end{longtable}
+
+\subsection{配置和状态}
+
+\begin{longtable}{p{5cm}p{6cm}p{6cm}}
+\toprule
+\textbf{功能} & \textbf{Pinocchio} & \textbf{MuJoCo} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{功能} & \textbf{Pinocchio} & \textbf{MuJoCo} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+位置变量数 & \texttt{model.nq} & \texttt{model.nq} \\
+速度变量数 & \texttt{model.nv} & \texttt{model.nv} \\
+配置向量 & \texttt{q} (nq 维) & \texttt{data.qpos} (nq 维) \\
+速度向量 & \texttt{v} (nv 维) & \texttt{data.qvel} (nv 维) \\
+加速度向量 & \texttt{a} (nv 维) & \texttt{data.qacc} (nv 维) \\
+随机配置 & \texttt{pin.randomConfiguration(model)} & \texttt{mujoco.mj\_setState(model, data, qpos, qvel)} \\
+中性配置 & \texttt{pin.neutral(model)} & \texttt{data.qpos[:] = model.qpos0} \\
+\bottomrule
+\end{longtable}
+
+\section{运动学 API}
+
+\subsection{正向运动学}
+
+\begin{longtable}{p{5cm}p{6cm}p{6cm}}
+\toprule
+\textbf{功能} & \textbf{Pinocchio} & \textbf{MuJoCo} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{功能} & \textbf{Pinocchio} & \textbf{MuJoCo} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+正向运动学 & \texttt{pin.forwardKinematics(model, data, q, [v, [a]])} & \texttt{mujoco.mj\_forward(model, data)} \\
+关节位置 & \texttt{data.oMi[joint\_id]} & \texttt{data.xpos[joint\_id]} \\
+关节旋转 & \texttt{data.oMi[joint\_id].rotation} & \texttt{data.xmat[joint\_id]} \\
+框架位置 & \texttt{data.oMf[frame\_id]} & \texttt{data.xpos[body\_id]} \\
+更新框架位置 & \texttt{pin.updateFramePlacements(model, data)} & \texttt{mujoco.mj\_forward(model, data)} \\
+\bottomrule
+\end{longtable}
+
+\subsection{雅可比矩阵}
+
+\begin{longtable}{p{5cm}p{6cm}p{6cm}}
+\toprule
+\textbf{功能} & \textbf{Pinocchio} & \textbf{MuJoCo} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{功能} & \textbf{Pinocchio} & \textbf{MuJoCo} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+完整雅可比 & \texttt{pin.computeJointJacobians(model, data, q)} & \texttt{mujoco.mj\_jacBody(model, data, jacp, jacr, body\_id)} \\
+ & \texttt{→ data.J} & \\
+关节雅可比 & \texttt{pin.getJointJacobian(model, data, joint\_id, ref\_frame)} & \texttt{mujoco.mj\_jacBodyCom(model, data, jacp, jacr, body\_id)} \\
+框架雅可比 & \texttt{pin.computeFrameJacobian(model, data, q, frame\_id, ref\_frame)} & \texttt{mujoco.mj\_jacGeom(model, data, jacp, jacr, geom\_id)} \\
+雅可比时间导数 & \texttt{pin.computeJointJacobiansTimeVariation(model, data, q, v)} & \texttt{mujoco.mj\_jacBodyCom(model, data, jacp, jacr, body\_id)} \\
+ & & \texttt{+ 手动计算时间导数} \\
+\bottomrule
+\end{longtable}
+
+\section{动力学 API}
+
+\subsection{正向动力学}
+
+\begin{longtable}{p{5cm}p{6cm}p{6cm}}
+\toprule
+\textbf{功能} & \textbf{Pinocchio} & \textbf{MuJoCo} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{功能} & \textbf{Pinocchio} & \textbf{MuJoCo} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+关节体算法 (ABA) & \texttt{pin.aba(model, data, q, v, tau, [f\_ext])} & \texttt{mujoco.mj\_forward(model, data)} \\
+ & \texttt{→ 返回加速度} & \texttt{+ mujoco.mj\_step(model, data)} \\
+质量矩阵 & \texttt{pin.crba(model, data, q)} & \texttt{mujoco.mj\_fullM(model, M, data.qM)} \\
+ & \texttt{→ data.M} & \\
+质量矩阵逆 & \texttt{pin.computeMinverse(model, data, q)} & \texttt{mujoco.mj\_solveLD(model, data, ...)} \\
+ & \texttt{→ data.Minv} & \\
+\bottomrule
+\end{longtable}
+
+\subsection{逆向动力学}
+
+\begin{longtable}{p{5cm}p{6cm}p{6cm}}
+\toprule
+\textbf{功能} & \textbf{Pinocchio} & \textbf{MuJoCo} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{功能} & \textbf{Pinocchio} & \textbf{MuJoCo} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+递归牛顿-欧拉 (RNEA) & \texttt{pin.rnea(model, data, q, v, a, [f\_ext])} & \texttt{mujoco.mj\_inverse(model, data)} \\
+ & \texttt{→ 返回扭矩} & \texttt{→ data.qfrc\_inverse} \\
+广义重力 & \texttt{pin.computeGeneralizedGravity(model, data, q)} & \texttt{mujoco.mj\_inverse(model, data)} \\
+ & & \texttt{（设置 v=0, a=0）} \\
+\bottomrule
+\end{longtable}
+
+\section{导数计算 API}
+
+\subsection{解析导数（Pinocchio 独有）}
+
+\begin{longtable}{p{5cm}p{6cm}}
+\toprule
+\textbf{功能} & \textbf{Pinocchio API} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{功能} & \textbf{Pinocchio API} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+RNEA 导数 & \texttt{pin.computeRNEADerivatives(model, data, q, v, a, [f\_ext])} \\
+ & \texttt{→ dtau\_dq, dtau\_dv, dtau\_da} \\
+正向运动学导数 & \texttt{pin.computeForwardKinematicsDerivatives(model, data, q, v, a)} \\
+速度导数 & \texttt{pin.getJointVelocityDerivatives(model, data, joint\_id, ref\_frame)} \\
+加速度导数 & \texttt{pin.getJointAccelerationDerivatives(model, data, joint\_id, ref\_frame)} \\
+框架速度导数 & \texttt{pin.getFrameVelocityDerivatives(model, data, frame\_id, ref\_frame)} \\
+框架加速度导数 & \texttt{pin.getFrameAccelerationDerivatives(model, data, frame\_id, ref\_frame)} \\
+配置积分导数 & \texttt{pin.dIntegrate(model, q, v, [arg\_pos])} \\
+配置差分导数 & \texttt{pin.dDifference(model, q1, q2, [arg\_pos])} \\
+\bottomrule
+\end{longtable}
+
+\textbf{注意}: MuJoCo 不提供解析导数，需要使用有限差分或自动微分库（如 JAX）。
+
+\section{碰撞检测 API}
+
+\begin{longtable}{p{5cm}p{6cm}p{6cm}}
+\toprule
+\textbf{功能} & \textbf{Pinocchio} & \textbf{MuJoCo} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{功能} & \textbf{Pinocchio} & \textbf{MuJoCo} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+更新几何位置 & \texttt{pin.updateGeometryPlacements(model, data, geometry\_model, geometry\_data, [q])} & \texttt{mujoco.mj\_forward(model, data)} \\
+碰撞检测（所有对） & \texttt{pin.computeCollisions(model, data, geometry\_model, geometry\_data, q)} & \texttt{mujoco.mj\_collision(model, data)} \\
+ & & \texttt{→ data.ncon, data.contact} \\
+碰撞检测（单对） & \texttt{pin.computeCollisions(geometry\_model, geometry\_data, pair\_index)} & \texttt{检查 data.contact 数组} \\
+距离计算 & \texttt{pin.computeDistance(geometry\_model, geometry\_data, [pair\_index])} & \texttt{mujoco.mj\_ray(model, data, ...)} \\
+\bottomrule
+\end{longtable}
+
+\section{质心和能量 API}
+
+\subsection{质心}
+
+\begin{longtable}{p{5cm}p{6cm}p{6cm}}
+\toprule
+\textbf{功能} & \textbf{Pinocchio} & \textbf{MuJoCo} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{功能} & \textbf{Pinocchio} & \textbf{MuJoCo} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+质心位置 & \texttt{pin.centerOfMass(model, data, q, [v, a])} & \texttt{data.subtree\_com[0]} \\
+ & \texttt{→ 返回 COM} & \texttt{（根节点质心）} \\
+质心雅可比 & \texttt{pin.jacobianCenterOfMass(model, data, [q])} & \texttt{mujoco.mj\_jacBodyCom(model, data, jacp, jacr, 0)} \\
+质心动量 & \texttt{pin.computeCentroidalMomentum(model, data, [q, v])} & \texttt{data.cinert[...]} \\
+ & \texttt{→ data.hg} & \texttt{（需要计算）} \\
+总质量 & \texttt{pin.computeTotalMass(model, [data])} & \texttt{model.body\_mass.sum()} \\
+\bottomrule
+\end{longtable}
+
+\subsection{能量}
+
+\begin{longtable}{p{5cm}p{6cm}p{6cm}}
+\toprule
+\textbf{功能} & \textbf{Pinocchio} & \textbf{MuJoCo} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{功能} & \textbf{Pinocchio} & \textbf{MuJoCo} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+动能 & \texttt{pin.computeKineticEnergy(model, data, [q, v])} & \texttt{data.energy[0]} \\
+势能 & \texttt{pin.computePotentialEnergy(model, data, [q, v])} & \texttt{data.energy[1]} \\
+机械能 & \texttt{pin.computeMechanicalEnergy(model, data, [q, v])} & \texttt{data.energy[0] + data.energy[1]} \\
+\bottomrule
+\end{longtable}
+
+\section{接触和约束 API}
+
+\subsection{接触动力学}
+
+\begin{longtable}{p{5cm}p{6cm}p{6cm}}
+\toprule
+\textbf{功能} & \textbf{Pinocchio} & \textbf{MuJoCo} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{功能} & \textbf{Pinocchio} & \textbf{MuJoCo} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+约束雅可比 & \texttt{pin.getConstraintJacobian(model, data, contact\_model, contact\_data)} & \texttt{从 data.contact 提取} \\
+带接触的正向动力学 & \texttt{pin.forwardDynamics(model, data, q, v, tau, constraint\_jacobian, ...)} & \texttt{mujoco.mj\_forward(model, data)} \\
+ & & \texttt{+ mujoco.mj\_step(model, data)} \\
+冲击动力学 & \texttt{pin.impulseDynamics(model, data, q, v, contact\_models, ...)} & \texttt{mujoco.mj\_step2(model, data)} \\
+约束动力学 & \texttt{pin.constraintDynamics(model, data, q, v, tau, contact\_models, ...)} & \texttt{内置在 mj\_step 中} \\
+\bottomrule
+\end{longtable}
+
+\section{回归器 API（Pinocchio 独有）}
+
+\begin{longtable}{p{5cm}p{6cm}}
+\toprule
+\textbf{功能} & \textbf{Pinocchio API} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{功能} & \textbf{Pinocchio API} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+静态回归器 & \texttt{pin.computeStaticRegressor(model, data, q)} \\
+物体回归器 & \texttt{pin.bodyRegressor(velocity, acceleration)} \\
+关节扭矩回归器 & \texttt{pin.computeJointTorqueRegressor(model, data, q, v, a)} \\
+运动学回归器 & \texttt{pin.computeJointKinematicRegressor(model, data, joint\_id, ...)} \\
+框架回归器 & \texttt{pin.computeFrameKinematicRegressor(model, data, frame\_id, ...)} \\
+\bottomrule
+\end{longtable}
+
+\textbf{注意}: MuJoCo 不提供回归器功能，主要用于仿真而非参数辨识。
+
+\section{可视化 API}
+
+\subsection{可视化（MuJoCo 独有）}
+
+\begin{longtable}{p{5cm}p{6cm}}
+\toprule
+\textbf{功能} & \textbf{MuJoCo API} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{功能} & \textbf{MuJoCo API} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+创建查看器 & \texttt{viewer = mujoco.Viewer(model)} \\
+渲染 & \texttt{mujoco.mj\_render(model, data)} \\
+同步查看器 & \texttt{viewer.sync()} \\
+显示 & \texttt{viewer.render()} \\
+\bottomrule
+\end{longtable}
+
+\textbf{注意}: Pinocchio 不提供内置可视化，需要使用外部工具（如 Meshcat、Gepetto Viewer）。
+
+\subsection{Pinocchio 可视化（外部工具）}
+
+\begin{longtable}{p{5cm}p{6cm}}
+\toprule
+\textbf{功能} & \textbf{Pinocchio + Meshcat} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{功能} & \textbf{Pinocchio + Meshcat} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+创建可视化器 & \texttt{viz = pin.visualize.MeshcatVisualizer(model, collision\_model, visual\_model)} \\
+初始化 & \texttt{viz.initViewer(loadModel=True)} \\
+显示 & \texttt{viz.display(q)} \\
+\bottomrule
+\end{longtable}
+
+\section{代码生成 API（Pinocchio 独有）}
+
+\begin{longtable}{p{5cm}p{6cm}}
+\toprule
+\textbf{功能} & \textbf{Pinocchio API} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{功能} & \textbf{Pinocchio API} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+代码生成 & 使用 CppADCodeGen 生成 C/C++ 代码 \\
+ & 运行时生成针对特定机器人的优化代码 \\
+ & 性能提升 3-8 倍 \\
+\bottomrule
+\end{longtable}
+
+\textbf{注意}: MuJoCo 不提供代码生成功能。
+
+\section{完整示例对比}
+
+\subsection{正向动力学示例}
+
+\textbf{Pinocchio:}
+\begin{lstlisting}
+import pinocchio as pin
+import numpy as np
+
+# 加载模型
+model = pin.buildModelFromUrdf("robot.urdf")
+data = model.createData()
+
+# 设置状态
+q = pin.neutral(model)
+v = np.zeros(model.nv)
+tau = np.zeros(model.nv)
+
+# 计算正向动力学
+a = pin.aba(model, data, q, v, tau)
+\end{lstlisting}
+
+\textbf{MuJoCo:}
+\begin{lstlisting}
+import mujoco
+import numpy as np
+
+# 加载模型
+model = mujoco.MjModel.from_xml_path("robot.xml")
+data = mujoco.MjData(model)
+
+# 设置状态
+data.qpos[:] = model.qpos0
+data.qvel[:] = np.zeros(model.nv)
+data.ctrl[:] = np.zeros(model.nu)
+
+# 计算正向动力学
+mujoco.mj_forward(model, data)
+mujoco.mj_step(model, data)
+# 加速度在 data.qacc
+\end{lstlisting}
+
+\subsection{逆向动力学示例}
+
+\textbf{Pinocchio:}
+\begin{lstlisting}
+# 设置配置、速度、加速度
+q = pin.randomConfiguration(model)
+v = np.random.rand(model.nv)
+a = np.random.rand(model.nv)
+
+# 计算所需扭矩
+tau = pin.rnea(model, data, q, v, a)
+\end{lstlisting}
+
+\textbf{MuJoCo:}
+\begin{lstlisting}
+# 设置配置、速度、加速度
+data.qpos[:] = q
+data.qvel[:] = v
+data.qacc[:] = a
+
+# 计算所需扭矩
+mujoco.mj_inverse(model, data)
+tau = data.qfrc_inverse.copy()
+\end{lstlisting}
+
+\section{API 设计哲学对比}
+
+\subsection{共同点}
+
+\begin{itemize}
+    \item \textbf{Model-Data 分离}: 两者都采用这种设计模式，提高效率和并行性
+    \item \textbf{函数式 API}: 大多数操作都是函数调用，而非面向对象方法
+    \item \textbf{状态管理}: 状态信息存储在 data 对象中
+\end{itemize}
+
+\subsection{差异点}
+
+\begin{itemize}
+    \item \textbf{Pinocchio}: 
+        \begin{itemize}
+            \item 函数返回计算结果（如 \texttt{tau = pin.rnea(...)}）
+            \item 更明确的函数命名（如 \texttt{forwardKinematics}）
+            \item 支持多种参考坐标系（LOCAL, WORLD, LOCAL\_WORLD\_ALIGNED）
+        \end{itemize}
+    \item \textbf{MuJoCo}:
+        \begin{itemize}
+            \item 结果存储在 data 中（如 \texttt{data.qfrc\_inverse}）
+            \item 更简洁的函数名（如 \texttt{mj\_forward}）
+            \item 内置物理仿真循环
+        \end{itemize}
+\end{itemize}
+
+\section{总结}
+
+\begin{itemize}
+    \item \textbf{Pinocchio} 专注于算法和优化，提供解析导数和代码生成
+    \item \textbf{MuJoCo} 专注于仿真和可视化，提供完整的物理引擎
+    \item 两者 API 设计相似，但功能定位不同
+    \item 可以根据需求选择或结合使用
+\end{itemize}
+
+\end{document}
+

@@ -1,0 +1,381 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[UTF8]{ctex}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{tikz}
+
+\geometry{margin=2cm}
+
+\lstset{
+    language=Python,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue}\ttfamily,
+    stringstyle=\color{red}\ttfamily,
+    commentstyle=\color{green}\ttfamily,
+    breaklines=true,
+    frame=single,
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    tabsize=2
+}
+
+\title{解析导数（Analytical Derivatives）详解}
+\author{机器人动力学中的梯度计算}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{什么是解析导数？}
+
+\subsection{基本概念}
+
+\textbf{解析导数（Analytical Derivatives）}是指通过数学公式直接计算函数的导数，而不是通过数值方法（如有限差分）来近似。
+
+\subsection{简单例子}
+
+考虑一个简单的函数：
+\begin{equation}
+f(x) = x^2 + 3x + 5
+\end{equation}
+
+\textbf{解析导数}（通过数学公式）：
+\begin{equation}
+\frac{df}{dx} = 2x + 3
+\end{equation}
+
+在 $x = 5$ 处：
+\begin{equation}
+\frac{df}{dx}\Big|_{x=5} = 2 \times 5 + 3 = 13
+\end{equation}
+
+\textbf{数值导数}（通过有限差分近似）：
+\begin{equation}
+\frac{df}{dx}\Big|_{x=5} \approx \frac{f(5+h) - f(5)}{h}
+\end{equation}
+
+其中 $h$ 是一个很小的数（如 $h = 0.0001$）。
+
+\section{解析导数 vs 数值导数}
+
+\subsection{对比表}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|p{5cm}|p{6cm}|p{6cm}|}
+\hline
+\textbf{特性} & \textbf{解析导数} & \textbf{数值导数} \\
+\hline
+计算方法 & 数学公式直接计算 & 有限差分近似 \\
+\hline
+精度 & 精确（机器精度） & 近似（有截断误差） \\
+\hline
+计算速度 & 快 & 慢（需要多次函数评估） \\
+\hline
+数值稳定性 & 稳定 & 可能不稳定（$h$ 的选择） \\
+\hline
+实现复杂度 & 需要推导公式 & 实现简单 \\
+\hline
+\end{tabular}
+\caption{解析导数与数值导数对比}
+\end{table}
+
+\subsection{数值导数的局限性}
+
+数值导数使用有限差分方法：
+\begin{equation}
+\frac{\partial f}{\partial x_i} \approx \frac{f(x + h e_i) - f(x)}{h}
+\end{equation}
+
+其中 $e_i$ 是第 $i$ 个单位向量。
+
+\textbf{问题}：
+\begin{itemize}
+    \item 需要 $n+1$ 次函数评估（$n$ 是变量维度）
+    \item 精度受 $h$ 选择影响：$h$ 太小→数值误差，$h$ 太大→截断误差
+    \item 计算成本高，特别是高维问题
+\end{itemize}
+
+\section{机器人动力学中的解析导数}
+
+\subsection{为什么需要导数？}
+
+在机器人学中，导数（梯度）对于以下应用至关重要：
+
+\begin{enumerate}
+    \item \textbf{轨迹优化}：需要目标函数关于配置的梯度
+    \item \textbf{模型预测控制（MPC）}：需要动力学模型的雅可比矩阵
+    \item \textbf{参数辨识}：需要回归器矩阵
+    \item \textbf{最优控制}：需要哈密顿函数的梯度
+\end{enumerate}
+
+\subsection{具体例子：逆向动力学的导数}
+
+逆向动力学函数：
+\begin{equation}
+\tau = \text{RNEA}(q, v, a)
+\end{equation}
+
+其中：
+\begin{itemize}
+    \item $q$：关节配置（$n$ 维）
+    \item $v$：关节速度（$n$ 维）
+    \item $a$：关节加速度（$n$ 维）
+    \item $\tau$：关节扭矩（$n$ 维）
+\end{itemize}
+
+\textbf{解析导数}计算：
+\begin{align}
+\frac{\partial \tau}{\partial q} &\in \mathbb{R}^{n \times n} \quad \text{（扭矩关于配置的雅可比）} \\
+\frac{\partial \tau}{\partial v} &\in \mathbb{R}^{n \times n} \quad \text{（扭矩关于速度的雅可比）} \\
+\frac{\partial \tau}{\partial a} &\in \mathbb{R}^{n \times n} \quad \text{（扭矩关于加速度的雅可比）}
+\end{align}
+
+\subsection{数值方法 vs 解析方法}
+
+\textbf{数值方法}（有限差分）：
+\begin{lstlisting}
+def numerical_derivative_rnea(model, data, q, v, a):
+    n = model.nv
+    dtau_dq = np.zeros((n, n))
+    
+    # 对每个配置变量
+    for i in range(n):
+        h = 1e-6
+        q_plus = q.copy()
+        q_plus[i] += h
+        
+        tau_plus = pin.rnea(model, data, q_plus, v, a)
+        tau = pin.rnea(model, data, q, v, a)
+        
+        dtau_dq[:, i] = (tau_plus - tau) / h
+    
+    return dtau_dq
+\end{lstlisting}
+
+\textbf{问题}：
+\begin{itemize}
+    \item 需要 $n+1$ 次 RNEA 调用
+    \item 对于 30 自由度机器人，需要 31 次调用
+    \item 每次调用约 10-50 $\mu$s，总计约 0.3-1.5 ms
+\end{itemize}
+
+\textbf{解析方法}（Pinocchio）：
+\begin{lstlisting}
+# 一次调用计算所有导数
+dtau_dq, dtau_dv, dtau_da = pin.computeRNEADerivatives(
+    model, data, q, v, a
+)
+\end{lstlisting}
+
+\textbf{优势}：
+\begin{itemize}
+    \item 只需 1 次函数调用
+    \item 计算时间约 20-100 $\mu$s（比数值方法快 10-50 倍）
+    \item 精度高（机器精度）
+\end{itemize}
+
+\section{Pinocchio 中的解析导数}
+
+\subsection{可用的解析导数}
+
+Pinocchio 提供以下函数的解析导数：
+
+\begin{enumerate}
+    \item \textbf{逆向动力学（RNEA）}：
+        \begin{itemize}
+            \item $\frac{\partial \tau}{\partial q}$, $\frac{\partial \tau}{\partial v}$, $\frac{\partial \tau}{\partial a}$
+        \end{itemize}
+    
+    \item \textbf{正向运动学}：
+        \begin{itemize}
+            \item $\frac{\partial v}{\partial q}$, $\frac{\partial v}{\partial \dot{q}}$（速度关于配置和速度的导数）
+            \item $\frac{\partial a}{\partial q}$, $\frac{\partial a}{\partial \dot{q}}$, $\frac{\partial a}{\partial \ddot{q}}$（加速度的导数）
+        \end{itemize}
+    
+    \item \textbf{框架雅可比}：
+        \begin{itemize}
+            \item $\frac{\partial J}{\partial q}$（雅可比关于配置的导数）
+        \end{itemize}
+    
+    \item \textbf{配置操作}：
+        \begin{itemize}
+            \item $\frac{\partial}{\partial q} \text{integrate}(q, v)$（积分的导数）
+            \item $\frac{\partial}{\partial q} \text{difference}(q_1, q_2)$（差分的导数）
+        \end{itemize}
+\end{enumerate}
+
+\subsection{API 示例}
+
+\begin{lstlisting}
+import pinocchio as pin
+import numpy as np
+
+# 加载模型
+model = pin.buildModelFromUrdf("robot.urdf")
+data = model.createData()
+
+# 设置状态
+q = pin.randomConfiguration(model)
+v = np.random.rand(model.nv)
+a = np.random.rand(model.nv)
+
+# 计算逆向动力学及其导数
+tau = pin.rnea(model, data, q, v, a)
+
+# 解析导数（一次调用）
+dtau_dq, dtau_dv, dtau_da = pin.computeRNEADerivatives(
+    model, data, q, v, a
+)
+
+# dtau_dq: (nv, nv) 矩阵
+# dtau_dv: (nv, nv) 矩阵  
+# dtau_da: (nv, nv) 矩阵（通常是质量矩阵）
+\end{lstlisting}
+
+\section{解析导数的数学原理}
+
+\subsection{链式法则}
+
+解析导数的计算基于链式法则。以 RNEA 为例：
+
+RNEA 算法包含两个阶段：
+\begin{enumerate}
+    \item \textbf{前向传递}：计算每个连杆的速度和加速度
+    \item \textbf{后向传递}：计算力和扭矩
+\end{enumerate}
+
+每个阶段都有解析导数，通过链式法则组合：
+\begin{equation}
+\frac{\partial \tau}{\partial q} = \frac{\partial \tau}{\partial \text{forces}} \cdot \frac{\partial \text{forces}}{\partial \text{accelerations}} \cdot \frac{\partial \text{accelerations}}{\partial q}
+\end{equation}
+
+\subsection{递归计算}
+
+Pinocchio 使用递归算法计算导数，类似于动力学算法本身：
+
+\begin{lstlisting}
+# 伪代码：RNEA 导数的递归计算
+def compute_rnea_derivatives(model, data, q, v, a):
+    # 前向传递：计算速度和加速度及其导数
+    for i in range(model.njoints):
+        # 计算速度导数
+        dv_dq[i] = compute_velocity_derivative(...)
+        dv_dv[i] = compute_velocity_derivative(...)
+        
+        # 计算加速度导数
+        da_dq[i] = compute_acceleration_derivative(...)
+        da_dv[i] = compute_acceleration_derivative(...)
+        da_da[i] = compute_acceleration_derivative(...)
+    
+    # 后向传递：计算力和扭矩及其导数
+    for i in range(model.njoints-1, -1, -1):
+        # 计算力导数
+        df_dq[i] = compute_force_derivative(...)
+        # ...
+        
+        # 计算扭矩导数
+        dtau_dq[i] = extract_torque_derivative(...)
+        # ...
+\end{lstlisting}
+
+\section{性能对比}
+
+\subsection{计算时间对比}
+
+对于 30 自由度的机器人：
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{方法} & \textbf{函数调用次数} & \textbf{计算时间} \\
+\hline
+数值导数（有限差分） & 31 & $\sim$ 0.5-1.5 ms \\
+\hline
+解析导数（Pinocchio） & 1 & $\sim$ 0.02-0.1 ms \\
+\hline
+\textbf{加速比} & \textbf{31x} & \textbf{10-50x} \\
+\hline
+\end{tabular}
+\caption{30 自由度机器人的导数计算性能对比}
+\end{table}
+
+\subsection{精度对比}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|c|}
+\hline
+\textbf{方法} & \textbf{精度} \\
+\hline
+数值导数（有限差分） & $O(h)$ 或 $O(h^2)$（取决于方法） \\
+\hline
+解析导数 & 机器精度（$\sim 10^{-15}$） \\
+\hline
+\end{tabular}
+\caption{精度对比}
+\end{table}
+
+\section{应用场景}
+
+\subsection{轨迹优化}
+
+在轨迹优化中，需要最小化目标函数：
+\begin{equation}
+J(q(t)) = \int_0^T L(q(t), \dot{q}(t), \ddot{q}(t)) dt
+\end{equation}
+
+使用梯度下降或牛顿法需要梯度：
+\begin{equation}
+\frac{\partial J}{\partial q} = \int_0^T \frac{\partial L}{\partial q} + \frac{\partial L}{\partial \dot{q}} \frac{\partial \dot{q}}{\partial q} + \frac{\partial L}{\partial \ddot{q}} \frac{\partial \ddot{q}}{\partial q} dt
+\end{equation}
+
+解析导数使得梯度计算快速且精确。
+
+\subsection{模型预测控制（MPC）}
+
+MPC 需要预测模型的线性化：
+\begin{equation}
+\delta \tau = \frac{\partial \tau}{\partial q} \delta q + \frac{\partial \tau}{\partial v} \delta v + \frac{\partial \tau}{\partial a} \delta a
+\end{equation}
+
+解析导数提供精确的线性化，提高 MPC 的稳定性和性能。
+
+\subsection{参数辨识}
+
+使用回归器进行参数辨识：
+\begin{equation}
+\tau = Y(q, v, a) \theta
+\end{equation}
+
+其中 $Y$ 是回归器矩阵，$\theta$ 是待辨识参数。解析导数用于计算回归器矩阵的梯度。
+
+\section{为什么 MuJoCo 不提供解析导数？}
+
+\begin{itemize}
+    \item \textbf{定位不同}：MuJoCo 专注于仿真，而非优化
+    \item \textbf{实现复杂度}：解析导数需要大量数学推导和代码实现
+    \item \textbf{使用场景}：强化学习通常不需要解析导数（使用策略梯度等方法）
+    \item \textbf{替代方案}：可以使用 JAX 等自动微分库
+\end{itemize}
+
+\section{总结}
+
+\begin{itemize}
+    \item \textbf{解析导数}是通过数学公式直接计算导数，而非数值近似
+    \item \textbf{优势}：速度快、精度高、数值稳定
+    \item \textbf{应用}：轨迹优化、MPC、参数辨识等需要梯度的场景
+    \item \textbf{Pinocchio 的优势}：提供完整的解析导数支持，这是其核心特性之一
+    \item \textbf{性能}：比数值方法快 10-50 倍，精度达到机器精度
+\end{itemize}
+
+解析导数是 Pinocchio 相比其他动力学库（如 MuJoCo、RBDL）的独特优势，使其特别适合需要梯度的优化和控制应用。
+
+\end{document}
+

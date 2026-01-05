@@ -1,0 +1,749 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[UTF8]{ctex}
+\usepackage{geometry}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\geometry{margin=1cm}
+
+% 代码样式设置
+\lstset{
+    language=Python,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue}\ttfamily,
+    stringstyle=\color{red}\ttfamily,
+    commentstyle=\color{green}\ttfamily,
+    breaklines=true,
+    frame=single,
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    tabsize=2
+}
+
+\title{Pinocchio 速查表}
+\author{Pinocchio Library}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{快速开始}
+
+\begin{longtable}{p{4cm}p{8cm}}
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+简单安装 & \texttt{conda install -c conda-forge pinocchio} \\
+导入库 & \texttt{import pinocchio as pin} \\
+文档 & \texttt{from pinocchio.utils import *} \\
+ & \texttt{pin.Model?} \\
+\bottomrule
+\end{longtable}
+
+\section{空间量}
+
+\subsection{变换 (SE3)}
+
+\begin{longtable}{p{4cm}p{8cm}}
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+SE3 变换 & \texttt{aMb = pin.SE3(aRb, apb)} \\
+单位变换 & \texttt{M = pin.SE3(1) or pin.SE3.Identity()} \\
+随机变换 & \texttt{pin.SE3.Random()} \\
+旋转矩阵 & \texttt{M.rotation} \\
+平移向量 & \texttt{M.translation} \\
+SE3 逆变换 & \texttt{bMa = aMb.inverse()} \\
+SE3 作用 & \texttt{aMc = aMb * bMc} \\
+作用矩阵 & \texttt{aXb = aMb.action} \\
+齐次矩阵 & \texttt{aHb = aMb.homogeneous} \\
+对数运算 SE3 → 6D & \texttt{pin.log(M)} \\
+指数运算 & \texttt{pin.exp(M)} \\
+\bottomrule
+\end{longtable}
+
+\subsection{空间速度 (Motion)}
+
+\begin{longtable}{p{4cm}p{8cm}}
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+运动向量 & \texttt{m = pin.Motion(v, w)} \\
+线性加速度 & \texttt{m.linear} \\
+角加速度 & \texttt{m.angular} \\
+SE3 作用 & \texttt{v\_a = aMb * v\_b} \\
+\bottomrule
+\end{longtable}
+
+\subsection{空间加速度}
+
+\begin{longtable}{p{4cm}p{8cm}}
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+算法中使用 & \texttt{a = ($\dot{\omega}$, $\dot{v}_O$)} \\
+获取经典加速度 & \texttt{a' = a + (0, $\omega \times v_O$)} \\
+ & \texttt{pin.classicAcceleration(v, a, [aMb])} \\
+\bottomrule
+\end{longtable}
+
+\subsection{空间力 (Force)}
+
+\begin{longtable}{p{4cm}p{8cm}}
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+力向量 & \texttt{f = pin.Force(l, n)} \\
+线性力 & \texttt{f.linear} \\
+扭矩 & \texttt{f.angular} \\
+SE3 作用 & \texttt{f\_a = aMb * f\_b} \\
+\bottomrule
+\end{longtable}
+
+\subsection{空间惯性 (Inertia)}
+
+\begin{longtable}{p{4cm}p{8cm}}
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+惯性 & \texttt{Y = pin.Inertia(mass, com, I)} \\
+质量 & \texttt{Y.mass} \\
+质心位置 & \texttt{Y.lever} \\
+转动惯量 & \texttt{Y.inertia} \\
+\bottomrule
+\end{longtable}
+
+\subsection{几何}
+
+\begin{longtable}{p{4cm}p{8cm}}
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+四元数 & \texttt{quat = pin.Quaternion(R)} \\
+轴角 & \texttt{aa = pin.AngleAxis(angle, axis)} \\
+\bottomrule
+\end{longtable}
+
+\subsection{有用的转换器}
+
+\begin{longtable}{p{4cm}p{8cm}}
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+SE3 → (x,y,z,quat) & \texttt{pin.se3ToXYZQUAT(M)} \\
+(x,y,z,quat) → SE3 & \texttt{pin.XYZQUATToSE3(vec)} \\
+\bottomrule
+\end{longtable}
+
+\section{数据 (Data)}
+
+\begin{longtable}{p{4cm}p{8cm}}
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+与模型相关的数据 & \texttt{data = pin.Data(model)} \\
+ & \texttt{data = model.createData()} \\
+关节数据 & \texttt{data.joints} \\
+关节/框架位置 & \texttt{data.oMi / [data.oMf]} \\
+关节速度 & \texttt{data.v} \\
+关节加速度 & \texttt{data.a} \\
+关节力 & \texttt{data.f} \\
+质量矩阵 & \texttt{data.M} \\
+非线性效应 & \texttt{data.nle} \\
+质心动量 & \texttt{data.hg} \\
+质心矩阵 & \texttt{data.Ag} \\
+质心惯性 & \texttt{data.Ig} \\
+\bottomrule
+\end{longtable}
+
+\section{模型 (Model)}
+
+\begin{longtable}{p{4cm}p{8cm}}
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+运动树模型 & \texttt{model = pin.Model()} \\
+模型名称 & \texttt{model.name} \\
+关节名称 & \texttt{model.names} \\
+关节模型 & \texttt{model.joints} \\
+关节位置 & \texttt{model.placements} \\
+连杆惯性 & \texttt{model.inertias} \\
+框架 & \texttt{model.frames} \\
+位置变量数量 & \texttt{model.nq} \\
+速度变量数量 & \texttt{model.nv} \\
+方法 & 使用 \texttt{?} 获取文档和输入参数 \\
+添加关节 & \texttt{model.addJoint} \\
+附加物体 & \texttt{model.appendBodyToJoint} \\
+添加框架 & \texttt{model.addFrame} \\
+将子模型附加到父模型 & \texttt{model.appendModel} \\
+构建简化模型 & \texttt{model.buildReducedModel} \\
+\bottomrule
+\end{longtable}
+
+\section{解析器}
+
+\begin{longtable}{p{4cm}p{8cm}}
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+加载 URDF 文件 & \texttt{pin.buildModelFromUrdf(filename, [root\_joint])} \\
+加载 SDF 文件 & \texttt{pin.buildModelFromSdf(filename, [root\_joint], root.link.name, parent.guidance)} \\
+\bottomrule
+\end{longtable}
+
+\section{参考坐标系}
+
+\subsection{坐标系 (CS)}
+
+\begin{longtable}{p{4cm}p{8cm}}
+\toprule
+\textbf{坐标系} & \textbf{描述} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{坐标系} & \textbf{描述} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+WORLD & 世界坐标系 \\
+LOCAL & 关节的局部坐标系 \\
+LOCAL\_WORLD\_ALIGNED & 与世界轴对齐的局部坐标系 \\
+\bottomrule
+\end{longtable}
+
+\section{配置 (Configuration)}
+
+\begin{longtable}{p{4cm}p{8cm}}
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+随机配置 & \texttt{pin.randomConfiguration(model, [lower\_bound, upper\_bound])} \\
+中性配置 & \texttt{pin.neutral(model)} \\
+归一化配置 & \texttt{pin.normalize(model, q)} \\
+配置差 & \texttt{pin.difference(model, q1, q2)} \\
+配置距离 & \texttt{pin.distance(model, q1, q2)} \\
+配置距离平方 & \texttt{pin.squareDistance(model, q1, q2)} \\
+插值配置 & \texttt{pin.interpolate(model, q1, q2, alpha)} \\
+积分配置 & \texttt{pin.integrate(model, q, v)} \\
+差分的偏导数 & \texttt{pin.dDifference(model, q1, q2, [arg\_pos])} \\
+积分的偏导数 & \texttt{pin.dIntegrate(model, q, v, [arg\_pos])} \\
+\bottomrule
+\end{longtable}
+
+\section{框架 (Frames)}
+
+\begin{longtable}{p{4cm}p{8cm}}
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+所有操作框架的位置 & \texttt{pin.updateFramePlacements(model, data)} \\
+当前框架相对于原点的位置 & \texttt{data.oMf} \\
+框架速度 & \texttt{pin.getFrameVelocity(model, data, frame\_id, ref\_frame)} \\
+框架加速度 & \texttt{pin.getFrameAcceleration(model, data, frame\_id, ref\_frame)} \\
+框架经典加速度 & \texttt{pin.getFrameClassicalAcceleration(model, data, frame\_id, ref\_frame)} \\
+框架位置 & \texttt{pin.framesForwardKinematics(model, data, q)} \\
+框架雅可比 & \texttt{pin.computeFrameJacobian(model, data, q, frame\_id, ref\_frame)} \\
+框架雅可比时间变化 & \texttt{pin.frameJacobianTimeVariation(model, data, q, v, frame\_id, ref\_frame)} \\
+空间速度的偏导数 & \texttt{pin.getFrameVelocityDerivatives(model, data, frame\_id, ref\_frame)} \\
+空间速度的偏导数（关节） & \texttt{pin.getFrameVelocityDerivatives(model, data, joint\_id, placement, ref\_frame)} \\
+空间加速度的偏导数 & \texttt{pin.getFrameAccelerationDerivatives(model, data, frame\_id, ref\_frame)} \\
+空间加速度的偏导数（关节） & \texttt{pin.getFrameAccelerationDerivatives(model, data, joint\_id, placement, ref\_frame)} \\
+\bottomrule
+\end{longtable}
+
+\section{碰撞 (Collision)}
+
+\begin{longtable}{p{4cm}p{8cm}}
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+更新碰撞对象位置 & \texttt{pin.updateGeometryPlacements(model, data, geometry\_model, geometry\_data, [q])} \\
+所有对的碰撞检测 & \texttt{pin.computeCollisions(model, data, geometry\_model, geometry\_data, q)} \\
+一对的碰撞检测 & \texttt{pin.computeCollisions(geometry\_model, geometry\_data, pair\_index)} \\
+碰撞距离 & \texttt{pin.computeDistance(geometry\_model, geometry\_data, [pair\_index])} \\
+每对的碰撞距离 & \texttt{pin.computeDistances([model, data], geometry\_model, geometry\_data, [q])} \\
+几何体积半径 & \texttt{pin.computeBodyRadius(model, geometry\_model, geometry\_data)} \\
+BroadPhase & \texttt{pin.computeCollisions(broadphase\_manager, callback)} \\
+ & \texttt{pin.computeCollisions(broadphase\_manager, stop\_at\_first\_collision)} \\
++ 前向运动学更新几何位置 & \texttt{pin.computeCollisions(model, data, broadphase\_manager, q, stop\_at\_first\_collision)} \\
+\bottomrule
+\end{longtable}
+
+\section{质心 (Center of Mass)}
+
+\begin{longtable}{p{4cm}p{8cm}}
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+模型总质量 & \texttt{pin.computeTotalMass(model, [data])} \\
+每个子树的质量 & \texttt{pin.computeSubtreeMasses(model, data)} \\
+质心 (COM) & \texttt{pin.centerOfMass(model, data, q, [v, a], [compute\_subtree\_com])} \\
+质心雅可比 & \texttt{pin.jacobianCenterOfMass(model, data, [q], [compute\_subtree\_com])} \\
+\bottomrule
+\end{longtable}
+
+\section{能量 (Energy)}
+
+\begin{longtable}{p{4cm}p{8cm}}
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+前向运动学和动能 & \texttt{pin.computeKineticEnergy(model, data, [q, v])} \\
+前向运动学和势能 & \texttt{pin.computePotentialEnergy(model, data, [q, v])} \\
+前向运动学和机械能 & \texttt{pin.computeMechanicalEnergy(model, data, [q, v])} \\
+\bottomrule
+\end{longtable}
+
+\section{运动学 (Kinematics)}
+
+\begin{longtable}{p{4cm}p{8cm}}
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+前向运动学 (FK) & \texttt{pin.forwardKinematics(model, data, q, [v, [a]])} \\
+FK 导数 & \texttt{pin.computeForwardKinematicsDerivatives(model, data, q, v, a)} \\
+[WORLD] & \texttt{pin.getJointVelocityDerivatives(model, data, joint\_id, pin.ReferenceFrame.WORLD)} \\
+[LOCAL] & \texttt{pin.getJointAccelerationDerivatives(model, data, joint\_id, pin.ReferenceFrame.LOCAL)} \\
+\bottomrule
+\end{longtable}
+
+\section{雅可比 (Jacobian)}
+
+\begin{longtable}{p{4cm}p{8cm}}
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+完整模型雅可比 → data.J & \texttt{pin.computeJointJacobians(model, data, [q])} \\
+关节雅可比 & \texttt{pin.getJointJacobian(model, data, joint\_id, ref\_frame)} \\
+完整模型 dJ/dt & \texttt{pin.computeJointJacobiansTimeVariation(model, data, q, v)} \\
+关节 dJ/dt & \texttt{pin.getJointJacobianTimeVariation(model, data, joint\_id, ref\_frame)} \\
+\bottomrule
+\end{longtable}
+
+\section{正向动力学 (Forward Dynamics)}
+
+\begin{longtable}{p{4cm}p{8cm}}
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+关节体算法 $\ddot{q}$ & \texttt{pin.aba(model, data, q, v, tau, [f\_ext])} \\
+关节空间惯性矩阵逆 & \texttt{pin.computeMinverse(model, data, [q])} \\
+复合刚体算法 & \texttt{pin.crba(model, data, q)} \\
+\bottomrule
+\end{longtable}
+
+\section{逆向动力学 (Inverse Dynamics)}
+
+\begin{longtable}{p{4cm}p{8cm}}
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+递归牛顿-欧拉算法 & \texttt{pin.rnea(model, data, q, v, a, [f\_ext])} \\
+广义重力 & \texttt{pin.computeGeneralizedGravity(model, data, q)} \\
+dtau\_dq, dtau\_dv, dtau\_da & \texttt{pin.computeRNEADerivatives(model, data, q, v, a, [f\_ext])} \\
+\bottomrule
+\end{longtable}
+
+\section{质心动力学 (Centroidal)}
+
+\begin{longtable}{p{4cm}p{8cm}}
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+质心动量 & \texttt{pin.computeCentroidalMomentum(model, data, [q, v])} \\
+质心动量 + 时间导数 & \texttt{pin.computeCentroidalMomentumTimeVariation(model, data, [q, v, a])} \\
+\bottomrule
+\end{longtable}
+
+\section{通用 (General)}
+
+\begin{longtable}{p{4cm}p{8cm}}
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+所有项（查看文档） & \texttt{pin.computeAllTerms(model, data, q, v)} \\
+\bottomrule
+\end{longtable}
+
+\section{回归器 (Regressor)}
+
+\subsection{运动学回归器}
+
+\begin{longtable}{p{4cm}p{8cm}}
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+运动学回归器（关节） & \texttt{pin.computeJointKinematicRegressor(model, data, joint\_id, ref\_frame, [placement])} \\
+运动学回归器（框架） & \texttt{pin.computeFrameKinematicRegressor(model, data, frame\_id, ref\_frame)} \\
+\bottomrule
+\end{longtable}
+
+\subsection{回归器}
+
+\begin{longtable}{p{4cm}p{8cm}}
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+静态回归器 & \texttt{pin.computeStaticRegressor(model, data, q)} \\
+物体回归器 & \texttt{pin.bodyRegressor(velocity, acceleration)} \\
+附加到关节的物体回归器 & \texttt{pin.jointBodyRegressor(model, data, joint\_id)} \\
+附加到框架的物体回归器 & \texttt{pin.frameBodyRegressor(model, data, frame\_id)} \\
+关节扭矩回归器 & \texttt{pin.computeJointTorqueRegressor(model, data, q, v, a)} \\
+\bottomrule
+\end{longtable}
+
+\section{接触雅可比 (Contact Jacobian)}
+
+\begin{longtable}{p{4cm}p{8cm}}
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+约束模型的运动学雅可比 & \texttt{pin.getConstraintJacobian(model, data, contact\_model, contact\_data)} \\
+约束模型集的运动学雅可比 & \texttt{pin.getConstraintJacobian(model, data, contact\_models, contact\_datas)} \\
+\bottomrule
+\end{longtable}
+
+\section{接触动力学 (Contact Dynamics)}
+
+\begin{longtable}{p{4cm}p{8cm}}
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+带接触的约束动力学 & \texttt{pin.forwardDynamics(model, data, [q, v], tau, constraint\_jacobian, constraint\_drift, damping)} \\
+带接触的冲击动力学 & \texttt{pin.impulseDynamics(model, data, [q], v\_before, constraint\_jacobian, restitution\_coefficient, damping)} \\
+约束矩阵的逆 & \texttt{pin.computeKKTContactDynamicMatrixInverse(model, data, q, constraint\_jac, damping)} \\
+\bottomrule
+\end{longtable}
+
+\section{约束动力学 (Constraint Dynamics)}
+
+\begin{longtable}{p{4cm}p{8cm}}
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+分配内存 & \texttt{pin.initConstraintDynamics(model, data, contact\_models)} \\
+带接触约束的正向动力学 & \texttt{pin.constraintDynamics(model, data, q, v, tau, contact\_models, contact\_datas, [prox\_settings])} \\
+带运动学约束的正向动力学导数 & \texttt{pin.computeConstraintDynamicsDerivatives(model, data, contact\_models, contact\_datas, prox\_settings)} \\
+\bottomrule
+\end{longtable}
+
+\section{冲击动力学 (Impulse Dynamics)}
+
+\begin{longtable}{p{4cm}p{8cm}}
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+带接触约束的冲击动力学 & \texttt{pin.impulseDynamics(model, data, q, v, contact\_models, contact\_datas, r\_coeff, mu)} \\
+冲击动力学导数 & \texttt{pin.computeImpulseDynamicsDerivatives(model, data, contact\_models, contact\_datas, r\_coeff, prox\_settings)} \\
+\bottomrule
+\end{longtable}
+
+\section{Cholesky 分解}
+
+\begin{longtable}{p{4cm}p{8cm}}
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+关节空间惯性矩阵的 Cholesky 分解 & \texttt{pin.cholesky.decompose(model, data)} \\
+求解 M x = y 中的 x & \texttt{pin.cholesky.solve(model, data, v)} \\
+关节空间惯性矩阵的逆 & \texttt{pin.cholesky.computeMinv(model, data)} \\
+\bottomrule
+\end{longtable}
+
+\section{可视化器 (Viewer)}
+
+\begin{longtable}{p{4cm}p{8cm}}
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{功能} & \textbf{代码} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+创建可视化器 & \texttt{mv = pin.visualize.MeshcatVisualizer} \\
+加载模型 & \texttt{viz = mv(model, collision\_model, visual\_model)} \\
+初始化 & \texttt{viz.initViewer(loadModel=True)} \\
+显示 & \texttt{viz.display(q)} \\
+添加基本形状 & \\
+球体 & \texttt{viz.viewer[name].set\_object(meshcat.geometry.Sphere(size), material)} \\
+盒子 & \texttt{viz.viewer[name].set\_object(meshcat.geometry.Box([sizex, sizey, sizez]), material)} \\
+更改几何体 [name] 的位置 & \texttt{viz.viewer[name].set\_transform(meshcat.transform(xyzquat\_placement))} \\
+\bottomrule
+\end{longtable}
+
+\end{document}
+
