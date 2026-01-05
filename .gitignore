@@ -47,6 +47,9 @@ desktop.ini
 *.bak
 *.backup
 
+# 文本文件（从 PDF 提取的中间文件）
+*.txt
+
 # 可选：如果不想跟踪编译的 PDF，取消下面的注释
 # *.pdf
 
